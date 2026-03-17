@@ -226,6 +226,9 @@ public class AuthController {
             System.out.println("│ ⏰ Valid for: " + otpExpiryMinutes + " minutes");
             System.out.println("=".repeat(70) + "\n");
             
+            // Send OTP via email
+            emailService.sendOTP(security.getEmail(), otp, security.getName());
+
             logAuthEvent(securityId, "SECURITY", "OTP_SENT", "SUCCESS", "OTP sent to " + maskEmail(security.getEmail()));
 
             Map<String, Object> response = new HashMap<>();
@@ -428,6 +431,9 @@ public class AuthController {
             System.out.println("│ ⏰ Valid for: " + otpExpiryMinutes + " minutes");
             System.out.println("=".repeat(70) + "\n");
             
+            // Send OTP via email
+            emailService.sendOTP(student.getEmail(), otp, student.getFirstName() + " " + student.getLastName());
+
             logAuthEvent(regNo, "STUDENT", "OTP_SENT", "SUCCESS", "OTP sent to " + maskEmail(student.getEmail()));
             
             Map<String, Object> response = new HashMap<>();
@@ -548,6 +554,9 @@ public class AuthController {
             System.out.println("│ ⏰ Valid for: " + otpExpiryMinutes + " minutes");
             System.out.println("=".repeat(70) + "\n");
             
+            // Send OTP via email
+            emailService.sendOTP(staff.getEmail(), otp, staff.getStaffName());
+
             logAuthEvent(staffCode, "STAFF", "OTP_SENT", "SUCCESS", "OTP sent to " + maskEmail(staff.getEmail()));
             
             Map<String, Object> response = new HashMap<>();
@@ -667,6 +676,9 @@ public class AuthController {
             System.out.println("│ ⏰ Valid for: " + otpExpiryMinutes + " minutes");
             System.out.println("=".repeat(70) + "\n");
             
+            // Send OTP via email
+            emailService.sendOTP(hod.getEmail(), otp, hod.getHodName());
+
             logAuthEvent(hodCode, "HOD", "OTP_SENT", "SUCCESS", "OTP sent to " + maskEmail(hod.getEmail()));
             
             Map<String, Object> response = new HashMap<>();
@@ -786,6 +798,9 @@ public class AuthController {
             System.out.println("│ ⏰ Valid for: " + otpExpiryMinutes + " minutes");
             System.out.println("=".repeat(70) + "\n");
             
+            // Send OTP via email
+            emailService.sendOTP(hr.getEmail(), otp, hr.getHrName());
+
             logAuthEvent(hrCode, "HR", "OTP_SENT", "SUCCESS", "OTP sent to " + maskEmail(hr.getEmail()));
             
             Map<String, Object> response = new HashMap<>();
@@ -906,6 +921,9 @@ public class AuthController {
             System.out.println("│ ⚡ OTP CODE : " + otp);
             System.out.println("│ ⏰ Valid for: " + otpExpiryMinutes + " minutes");
             System.out.println("=".repeat(70) + "\n");
+
+            // Send OTP via email
+            emailService.sendOTP(email, otp, security.getName());
 
             logAuthEvent(securityCode, "SECURITY", "OTP_SENT", "SUCCESS", "OTP sent to " + maskEmail(email));
 
