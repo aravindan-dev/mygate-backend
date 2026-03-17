@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: mygate-backend
+    runtime: docker
+    repo: https://github.com/aravindan-dev/mygate-backend
+    branch: main
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: DB_URL
+        value: jdbc:mysql://switchback.proxy.rlwy.net:11770/railway?useSSL=true&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - key: DB_USERNAME
+        value: root
+      - key: DB_PASSWORD
+        sync: false
+      - key: MAIL_USERNAME
+        value: ritgatechennai@gmail.com
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: PORT
+        value: "8080"
