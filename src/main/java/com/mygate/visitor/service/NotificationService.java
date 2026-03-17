@@ -22,18 +22,32 @@ public class NotificationService {
     private final StaffRepository staffRepository;
     private final HODRepository hodRepository;
     private final HRRepository hrRepository;
+    private final ExpoPushService expoPushService;
     
     public NotificationService(
             NotificationRepository notificationRepository,
             StudentRepository studentRepository,
             StaffRepository staffRepository,
             HODRepository hodRepository,
-            HRRepository hrRepository) {
+            HRRepository hrRepository,
+            ExpoPushService expoPushService) {
         this.notificationRepository = notificationRepository;
         this.studentRepository = studentRepository;
         this.staffRepository = staffRepository;
         this.hodRepository = hodRepository;
         this.hrRepository = hrRepository;
+        this.expoPushService = expoPushService;
+    }
+
+    // ── Helper: save notification AND send push ────────────────────────
+    private void saveAndPush(Notification notification) {
+        notificationRepository.save(notification);
+        expoPushService.sendToUser(
+            notification.getUserId(),
+            notification.getTitle(),
+            notification.getMessage(),
+            notification.getPriority() != null ? notification.getPriority().name() : "NORMAL"
+        );
     }
     
     // ==================== STUDENT GATE PASS NOTIFICATIONS ====================
@@ -59,7 +73,7 @@ public class NotificationService {
                 "/staff/pending-approvals"
             );
             
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 Notification sent to staff {} for new student request from {}", staffCode, studentName);
             
         } catch (Exception e) {
@@ -87,7 +101,7 @@ public class NotificationService {
                 "/student/my-requests"
             );
             
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 Notification sent to student {} for staff approval", regNo);
             
         } catch (Exception e) {
@@ -116,7 +130,7 @@ public class NotificationService {
                 "/hod/pending-approvals"
             );
             
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 Notification sent to HOD {} for staff-approved request", hodCode);
             
         } catch (Exception e) {
@@ -144,7 +158,7 @@ public class NotificationService {
                 "/student/my-requests"
             );
             
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 Notification sent to student {} for staff rejection", regNo);
             
         } catch (Exception e) {
@@ -172,7 +186,7 @@ public class NotificationService {
                 "/student/my-requests"
             );
             
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 Notification sent to student {} for HOD approval (QR ready)", regNo);
             
         } catch (Exception e) {
@@ -200,7 +214,7 @@ public class NotificationService {
                 "/student/my-requests"
             );
             
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 Notification sent to student {} for HOD rejection", regNo);
             
         } catch (Exception e) {
@@ -232,7 +246,7 @@ public class NotificationService {
                 "/hod/pending-approvals"
             );
             
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 Notification sent to HOD {} for new staff request", hodCode);
             
         } catch (Exception e) {
@@ -261,7 +275,7 @@ public class NotificationService {
                 "/staff/my-requests"
             );
             
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 Notification sent to staff {} for HOD approval (QR ready)", staffCode);
             
         } catch (Exception e) {
@@ -290,7 +304,7 @@ public class NotificationService {
                 "/staff/my-requests"
             );
             
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 Notification sent to staff {} for HOD rejection", staffCode);
             
         } catch (Exception e) {
@@ -321,7 +335,7 @@ public class NotificationService {
                     "/my-requests"
                 );
                 
-                notificationRepository.save(notification);
+                saveAndPush(notification);
                 log.info("📧 Notification sent to receiver {} for bulk pass", receiverId);
             }
             
@@ -356,7 +370,7 @@ public class NotificationService {
                 "/my-requests"
             );
             
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 Notification sent to receiver {} for bulk pass", receiverId);
             
         } catch (Exception e) {
@@ -387,7 +401,7 @@ public class NotificationService {
                 "/hr/pending-approvals"
             );
             
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 Notification sent to HR {} for new HOD request", hrCode);
             
         } catch (Exception e) {
@@ -415,7 +429,7 @@ public class NotificationService {
                 "/hod/my-requests"
             );
             
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 Notification sent to HOD {} for HR approval (QR ready)", hodCode);
             
         } catch (Exception e) {
@@ -443,7 +457,7 @@ public class NotificationService {
                 "/hod/my-requests"
             );
             
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 Notification sent to HOD {} for HR rejection", hodCode);
             
         } catch (Exception e) {
@@ -472,7 +486,7 @@ public class NotificationService {
                     "/my-requests"
                 );
                 
-                notificationRepository.save(notification);
+                saveAndPush(notification);
                 log.info("📧 Notification sent to receiver {} for HOD bulk pass", receiverId);
             }
             
@@ -504,7 +518,7 @@ public class NotificationService {
     public void markAsRead(Long notificationId) {
         notificationRepository.findById(notificationId).ifPresent(notification -> {
             notification.setIsRead(true);
-            notificationRepository.save(notification);
+            saveAndPush(notification);
         });
     }
     
@@ -516,7 +530,7 @@ public class NotificationService {
         List<Notification> notifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
         notifications.forEach(notification -> {
             notification.setIsRead(true);
-            notificationRepository.save(notification);
+            saveAndPush(notification);
         });
     }
     
@@ -531,7 +545,7 @@ public class NotificationService {
                                          String visitorName, String visitorType) {
         try {
             Notification notification = new Notification(securityId, type, message, visitorName, visitorType);
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 Visitor notification sent to security {}", securityId);
         } catch (Exception e) {
             log.error("Error creating visitor notification", e);
@@ -557,7 +571,7 @@ public class NotificationService {
                 null
             );
             
-            notificationRepository.save(notification);
+            saveAndPush(notification);
             log.info("📧 User notification sent to {}", userId);
         } catch (Exception e) {
             log.error("Error creating user notification", e);

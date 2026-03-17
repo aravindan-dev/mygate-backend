@@ -1,7 +1,9 @@
 package com.mygate.visitor.controller;
 
 import com.mygate.visitor.entity.Notification;
+import com.mygate.visitor.entity.UserPushToken;
 import com.mygate.visitor.repository.NotificationRepository;
+import com.mygate.visitor.repository.UserPushTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,36 @@ public class NotificationController {
     
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private UserPushTokenRepository pushTokenRepository;
+
+    // ── Register push token ──────────────────────────────────────────────
+    @PostMapping("/register-token")
+    public ResponseEntity<?> registerToken(@RequestBody Map<String, String> body) {
+        try {
+            String userId = body.get("userId");
+            String pushToken = body.get("pushToken");
+            String platform = body.getOrDefault("platform", "android").toUpperCase();
+
+            if (userId == null || pushToken == null) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "userId and pushToken required"));
+            }
+
+            // Upsert: update if token exists, else create
+            pushTokenRepository.findByPushToken(pushToken).ifPresentOrElse(
+                existing -> {
+                    existing.setUserId(userId);
+                    pushTokenRepository.save(existing);
+                },
+                () -> pushTokenRepository.save(new UserPushToken(userId, pushToken, platform))
+            );
+
+            return ResponseEntity.ok(Map.of("success", true, "message", "Push token registered"));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
     
     // Get notifications for student
     @GetMapping("/student/{regNo}")
